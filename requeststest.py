@@ -95,7 +95,7 @@ def process_jobs():
         job_list_response = requests.get(jobs_list_url, verify=False, params = queryParams)
 
         if job_list_response.status_code == 200:
-            if start_position > 100: break
+            # if start_position > 100: break
             reattempt = 1
             jobs_list_soup = BeautifulSoup(job_list_response.text, "html.parser")
             jobs_list = jobs_list_soup.find_all("li")
