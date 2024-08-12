@@ -9,7 +9,7 @@ import argparse
 import concurrent.futures
 
 #custom imports
-from JobDetail import JobDetail
+#from JobDetail import JobDetail
 
 #Ignore warnings shown while making api requests
 warnings.filterwarnings('ignore')
@@ -24,6 +24,15 @@ job_title = args.job_title
 job_location = args.job_location
 # job_title, job_location = "Data Analyst", "Canada"
 job_details = []
+
+class JobDetail:
+        job_title = ""
+        company_name = ""
+        company_location = ""
+        pay_range = ""
+        job_level = ""
+        employment_type = ""
+        job_posted_datetime = ""
 
 def parse_relative_date(relative_str):
     current_date = datetime.now()
