@@ -116,7 +116,7 @@ def process_jobs():
         #Wait before making request
         # time.sleep(1)
 
-        if len(job_details) % 100 == 0:
+        if len(job_details) > 100:
             write_output("data")
             job_details.clear()
 
