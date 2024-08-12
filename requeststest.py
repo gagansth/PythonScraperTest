@@ -15,8 +15,8 @@ from JobDetail import JobDetail
 warnings.filterwarnings('ignore')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--job_title', dest='job_title', type=str, help='Add job title', required=False)
-parser.add_argument('--job_location', dest='job_location', type=str, help='Add job location', required=False)
+parser.add_argument('--job_title', dest='job_title', type=str, help='Add job title you want to filter', required=False)
+parser.add_argument('--job_location', dest='job_location', type=str, help='Add job location you want to filter', required=False)
 args = parser.parse_args()
 
 # job_title, job_location = "Data Analyst", "Canada"
