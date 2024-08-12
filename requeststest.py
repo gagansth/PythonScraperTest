@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import csv
 import re
 import argparse
+import concurrent.futures
 
 #custom imports
 from JobDetail import JobDetail
@@ -21,7 +22,7 @@ args = parser.parse_args()
 # job_title, job_location = "Data Analyst", "Canada"
 job_title = args.job_title
 job_location = args.job_location
-job_title, job_location = "Data Analyst", "Canada"
+# job_title, job_location = "Data Analyst", "Canada"
 job_details = []
 
 def parse_relative_date(relative_str):
@@ -87,11 +88,12 @@ def parse_job_details(job_id, attempt = 1):
     #Call function with same job id for another attempt    
     parse_job_details(job_id, attempt)
 
-def write_output(mode):
+def write_output(write_mode):
     #writing the list of job_detail object to csv file
-    with open("sample_output.csv", mode='a', newline='') as file:
+    mode = "w" if write_mode == "header" else "a"
+    with open("sample_output.csv", mode=mode, newline='') as file:
         writer = csv.writer(file, delimiter='~')
-        if(mode == "header"):
+        if(write_mode == "header"):
             # Write header manually (if needed)
             writer.writerow(['job_title','company_name', 'company_location', 'pay_range','job_level','employment_type','job_posted_date'])
         else:
@@ -114,7 +116,7 @@ def process_jobs():
         #Wait before making request
         # time.sleep(1)
 
-        if processed_job_count % 100 == 0:
+        if len(job_details) % 100 == 0:
             write_output("data")
             job_details.clear()
 
@@ -125,7 +127,7 @@ def process_jobs():
             reattempt = 1
             jobs_list_soup = BeautifulSoup(job_list_response.text, "html.parser")
             jobs_list = jobs_list_soup.find_all("li")
-            print(f"Found {len(jobs_list)} more jobs in page - {start_position}")
+            print(f"Found {len(jobs_list)} more jobs in page - {start_position} at {datetime.now()}")
             for job_detail in jobs_list:
                 try:
                     base_card_div = job_detail.find("div", {"class": "base-card"})
@@ -135,12 +137,11 @@ def process_jobs():
                     #wait 1 second before continuing the loop
                     # time.sleep(1)
                 except Exception as ex:
-                    print(f"Error occured -> {ex}")
-
+                    print(f"Error occured -> {ex}")    
         else:
+            print(f"Reponse code => {job_list_response.status_code} , Current Start position(page) => {start_position} , attempt -> {reattempt}, time {datetime.now()}")
             start_position -= 1
             reattempt += 1
-            print(f"Reponse code => {job_list_response.status_code} , Current Start position(page) => {start_position} , attempt -> {reattempt}, time {datetime.now()}")
 
         start_position += 1
     print(f"Processed jobs - {processed_job_count}")
