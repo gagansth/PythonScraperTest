@@ -5,6 +5,7 @@ import warnings
 from datetime import datetime, timedelta
 import csv
 import re
+import argparse
 
 #custom imports
 from JobDetail import JobDetail
@@ -12,7 +13,16 @@ from JobDetail import JobDetail
 #Ignore warnings shown while making api requests
 warnings.filterwarnings('ignore')
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--job_title', dest='job_title', type=str, help='Add job title', required=False)
+parser.add_argument('--job_location', dest='job_location', type=str, help='Add job location', required=False)
+args = parser.parse_args()
+
+# job_title, job_location = "Data Analyst", "Canada"
+job_title = args.job_title
+job_location = args.job_location
 job_title, job_location = "Data Analyst", "Canada"
+job_details = []
 
 def parse_relative_date(relative_str):
     current_date = datetime.now()
@@ -77,21 +87,37 @@ def parse_job_details(job_id, attempt = 1):
     #Call function with same job id for another attempt    
     parse_job_details(job_id, attempt)
 
+def write_output(mode):
+    #writing the list of job_detail object to csv file
+    with open("sample_output.csv", mode='a', newline='') as file:
+        writer = csv.writer(file, delimiter='~')
+        if(mode == "header"):
+            # Write header manually (if needed)
+            writer.writerow(['job_title','company_name', 'company_location', 'pay_range','job_level','employment_type','job_posted_date'])
+        else:
+            # Write job data
+            for jd in job_details:
+                writer.writerow([jd.job_title, jd.company_name, jd.company_location, jd.pay_range, jd.job_level, jd.employment_type, jd.job_posted_datetime])
+
 def process_jobs():
     processed_job_count = 0
     #Assuming each page contains 10 records, divide the start_position(page_num) by 10 to loop over
     print(f"Found {job_count} jobs which will loop {job_count/10} times")
     start_position = 1
     reattempt = 1
-    while start_position <= (job_count/10) or reattempt > 15:
-        print(f"Current Start position => {start_position} and attempt -> {reattempt}")
+    while start_position <= (job_count/10) or reattempt < 50:
         #jobs_list_url = f"https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=Data%2BAnalyst&location=United%2BStates&start={start_position}"
         jobs_list_url = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
 
         #Add start position(or page number) param in the query api
         queryParams["start"] = start_position
         #Wait before making request
-        time.sleep(1)
+        # time.sleep(1)
+
+        if processed_job_count % 100 == 0:
+            write_output("data")
+            job_details.clear()
+
         job_list_response = requests.get(jobs_list_url, verify=False, params = queryParams)
 
         if job_list_response.status_code == 200:
@@ -107,30 +133,34 @@ def process_jobs():
                     parse_job_details(job_id)
                     processed_job_count += 1
                     #wait 1 second before continuing the loop
-                    time.sleep(1)
+                    # time.sleep(1)
                 except Exception as ex:
                     print(f"Error occured -> {ex}")
 
         else:
             start_position -= 1
             reattempt += 1
+            print(f"Reponse code => {job_list_response.status_code} , Current Start position(page) => {start_position} , attempt -> {reattempt}, time {datetime.now()}")
 
         start_position += 1
     print(f"Processed jobs - {processed_job_count}")
 
 # start execution
-print(f"Execution started at {datetime.now()}")
+start_time = datetime.now()
+print(f"Execution started at {start_time}")
+write_output("header")
 
 queryParams = {}
 if(job_title != ""):
+    print(f"Job title search condition is: {job_title}")
     queryParams["keywords"] = job_title
 
 if(job_location != ""):
+    print(f"Job location search condition is: {job_location}")
     queryParams["location"] = job_location
 
 queryParams["pageNum"] = 0
 
-job_details = []
 job_count = 0
 
 #Finding the number of jobs
@@ -155,13 +185,6 @@ try:
 except Exception as ex:
     print(f"Error occured -> {ex}")
 
-#writing the list of job_detail object to csv file
-with open("./sample_output.csv", mode='w', newline='') as file:
-    writer = csv.writer(file, delimiter='~')
-    # Write header manually (if needed)
-    writer.writerow(['job_title','company_name', 'company_location', 'pay_range','job_level','employment_type','job_posted_date'])
-    # Write job data
-    for jd in job_details:
-        writer.writerow([jd.job_title, jd.company_name, jd.company_location, jd.pay_range, jd.job_level, jd.employment_type, jd.job_posted_datetime])
 
 print(f"Execution completed at {datetime.now()}")
+print(f"Execution completed in {datetime.now() - start_time}")
