@@ -184,7 +184,7 @@ if __name__ == "__main__":
         queryParams["location"] = job_location
 
     if(output_filename == ""):
-        output_filename = "sample_output.csv"    
+        output_filename = "sample_output"    
 
     queryParams["pageNum"] = 0
 
