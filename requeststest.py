@@ -17,12 +17,15 @@ warnings.filterwarnings('ignore')
 parser = argparse.ArgumentParser()
 parser.add_argument('--job_title', dest='job_title', type=str, help='Add job title you want to filter', required=False)
 parser.add_argument('--job_location', dest='job_location', type=str, help='Add job location you want to filter', required=False)
+parser.add_argument('--output_filename', dest='output_filename', type=str, help='Add Output file name', required=False)
 args = parser.parse_args()
 
 # job_title, job_location = "Data Analyst", "Canada"
 job_title = args.job_title
 job_location = args.job_location
-# job_title, job_location = "Data Analyst", "Canada"
+output_filename =  args.output_filename
+output_filename = output_filename[:output_filename.rfind('.')] if output_filename.find('.') > 0 else output_filename
+# job_title, job_location, output_filename = "Data Analyst", "Canada", "sample_output"
 job_details = []
 
 class JobDetail:
@@ -109,7 +112,7 @@ def parse_job_details(job_id, attempt = 1):
 def write_output(write_mode):
     #writing the list of job_detail object to csv file
     mode = "w" if write_mode == "header" else "a"
-    with open("sample_output.csv", mode=mode, newline='') as file:
+    with open(output_filename + ".csv", mode=mode, newline='') as file:
         writer = csv.writer(file, delimiter='~')
         if(write_mode == "header"):
             # Write header manually (if needed)
@@ -168,8 +171,7 @@ if __name__ == "__main__":
     # start execution
     start_time = datetime.now()
     print(f"Execution started at {start_time}")
-    write_output("header")
-
+        
     queryParams = {}
     if(job_title != ""):
         print(f"Job title search condition is: {job_title}")
@@ -179,9 +181,14 @@ if __name__ == "__main__":
         print(f"Job location search condition is: {job_location}")
         queryParams["location"] = job_location
 
+    if(output_filename == ""):
+        output_filename = "sample_output.csv"    
+
     queryParams["pageNum"] = 0
 
     job_count = 0
+    #Write header to file
+    write_output("header")
 
     #Finding the number of jobs
     tryattempt = 0
