@@ -81,7 +81,7 @@ def parse_job_details(job_id, attempt = 1):
             jd_company_location_tag = job_details_soup.find("span", {"class" : "topcard__flavor topcard__flavor--bullet"})
             # jd_company_name_tag = job_details_soup.find("a", {"class": "topcard__org-name-link topcard__flavor--black-link"})
             jd_company_name_tag = jd_company_location_tag.find_previous_sibling("span")
-            jd_job_criteria_li_tags = job_details_soup.find("ul", {"class", "description__job-criteria-list"}).find_all("li")
+            jd_job_criteria_ul_tag = job_details_soup.find("ul", {"class", "description__job-criteria-list"})
             jd_pay_range_tag = job_details_soup.find("div", {"class", "salary compensation__salary"})
             # jd_job_posted_datetime_tag = job_details_soup.find("span", {"class", "posted-time-ago__text posted-time-ago__text--new topcard__flavor--metadata"})
             jd_job_posted_datetime_tag = jd_company_location_tag.find_parent("div").find_next_sibling("div").findChild("span")
@@ -92,9 +92,18 @@ def parse_job_details(job_id, attempt = 1):
             job_detail.job_title = jd_job_title_tag.text.strip()
             job_detail.company_name = jd_company_name_tag.text.strip()
             job_detail.company_location = jd_company_location_tag.text.strip()
-            job_detail.job_level = jd_job_criteria_li_tags[0].find("span").text.strip()
-            job_detail.employment_type = jd_job_criteria_li_tags[1].find("span").text.strip()
-            job_detail.industry = jd_job_criteria_li_tags[3].find("span").text.strip()
+            try:
+                job_detail.job_level = jd_job_criteria_ul_tag.find(string = re.compile("Seniority level")).find_parent("li").find("span").text.strip()
+            except:
+                job_detail.job_level = ""
+            try:
+                job_detail.employment_type = jd_job_criteria_ul_tag.find(string = re.compile("Employment type")).find_parent("li").find("span").text.strip()
+            except:
+                job_detail.employment_type = ""
+            try:
+                job_detail.industry = jd_job_criteria_ul_tag.find(string = re.compile("Industries")).find_parent("li").find("span").text.strip()
+            except:
+                job_detail.industry = ""
             try:
                 job_detail.pay_range = jd_pay_range_tag.text.strip()
             except:
@@ -108,7 +117,7 @@ def parse_job_details(job_id, attempt = 1):
         #Call function with same job id for another attempt    
         parse_job_details(job_id, attempt)
     except Exception as ex:
-        print(f"Exception inside parse_job_details function - {ex}")
+        print(f"Exception inside parse_job_details function - {ex} for jobid - {job_id}")
         print(traceback.format_exc())
 
 def write_output(write_mode):
@@ -221,4 +230,3 @@ if __name__ == "__main__":
 
     print(f"Execution completed at {datetime.now()}")
     print(f"Execution completed in {datetime.now() - start_time}")
-
