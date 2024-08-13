@@ -23,8 +23,10 @@ args = parser.parse_args()
 # job_title, job_location = "Data Analyst", "Canada"
 job_title = args.job_title
 job_location = args.job_location
-output_filename =  args.output_filename
-output_filename = output_filename[:output_filename.rfind('.')] if output_filename.find('.') > 0 else output_filename
+output_filename = ""
+if args.output_filename is not None:
+    output_filename = args.output_filename
+    output_filename = output_filename[:output_filename.rfind('.')] if output_filename.find('.') > 0 else output_filename
 # job_title, job_location, output_filename = "Data Analyst", "Canada", "sample_output"
 job_details = []
 
@@ -188,6 +190,7 @@ if __name__ == "__main__":
 
     job_count = 0
     #Write header to file
+    print(f"Output filename is {output_filename}")
     write_output("header")
 
     #Finding the number of jobs
