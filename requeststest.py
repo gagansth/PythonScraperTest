@@ -123,7 +123,7 @@ def parse_job_details(job_id, attempt = 1):
 def write_output(write_mode):
     #writing the list of job_detail object to csv file
     mode = "w" if write_mode == "header" else "a"
-    with open(output_filename + ".csv", mode=mode, newline='') as file:
+    with open(output_filename + ".csv", mode=mode, newline='', encoding="utf-8") as file:
         writer = csv.writer(file, delimiter='~')
         if(write_mode == "header"):
             # Write header manually (if needed)
